@@ -1,55 +1,70 @@
 #!/usr/bin/python3
 """
-A script that reads stdin line by line and computes metrics
+log parsing
 """
 
 import sys
+import signal
+import re
+
+# Initialize metrics
+total_size = 0
+status_codes_count = {
+    200: 0,
+    301: 0,
+    400: 0,
+    401: 0,
+    403: 0,
+    404: 0,
+    405: 0,
+    500: 0}
+line_count = 0
 
 
-def compute_metrics(lines):
-    """
-    A function that computes the metrics
-    """
-    total_size = 0
-    status_counts = {200: 0, 301: 0, 400: 0, 401:
-                     0, 403: 0, 404: 0, 405: 0, 500: 0}
-
-    for line in lines:
-        parts = line.split()
-        if len(parts) == 7 and parts[3].isdigit() and parts[4].isdigit():
-            total_size += int(parts[4])
-            status_code = int(parts[5])
-            if status_code in status_counts:
-                status_counts[status_code] += 1
-    return total_size, status_counts
+def print_stats():
+    """Print the statistics."""
+    print(f"File size: {total_size}")
+    for code in sorted(status_codes_count.keys()):
+        if status_codes_count[code] > 0:
+            print(f"{code}: {status_codes_count[code]}")
 
 
-def print_statistics(total_size, status_counts):
-    """
-    A function that prints statistics
-    """
-    print(f"Total file size: {total_size}")
-    for status_code, count in sorted(status_counts.items()):
-        if count > 0:
-            print(f"{status_code}: {count}")
+def signal_handler(sig, frame):
+    """Handle the interrupt signal."""
+    print_stats()
+    sys.exit(0)
 
 
-def main():
-    """
-    Main function
-    """
-    lines = []
-    try:
-        for line in sys.stdin:
-            lines.append(line.strip())
-            if len(lines) == 10:
-                total_size, status_counts = compute_metrics(lines)
-                print_statistics(total_size, status_counts)
-                lines = []
-    except KeyboardInterrupt:
-        total_size, status_counts = compute_metrics(lines)
-        print_statistics(total_size, status_counts)
+# Register the signal handler for keyboard interrupt
+signal.signal(signal.SIGINT, signal_handler)
 
+# Regular expression to match the log format
+log_pattern = re.compile(
+    r'^(\S+) - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d{3}) (\d+)$')
 
-if __name__ == "__main__":
-    main()
+try:
+    while True:
+        try:
+            line = input()
+            match = log_pattern.match(line)
+            if match:
+                # Extract fields
+                status_code = int(match.group(3))
+                file_size = int(match.group(4))
+
+                # Update metrics
+                total_size += file_size
+                if status_code in status_codes_count:
+                    status_codes_count[status_code] += 1
+
+                line_count += 1
+
+                # Print stats every 10 lines
+                if line_count % 10 == 0:
+                    print_stats()
+        except EOFError:
+            break
+except KeyboardInterrupt:
+    pass
+finally:
+    print_stats()
