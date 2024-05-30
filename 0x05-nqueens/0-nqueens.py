@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+"""N queens task"""
 import sys
 
 def print_solution(queens):
