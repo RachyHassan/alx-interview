@@ -5,6 +5,7 @@
 
 
 def isWinner(x, nums):
+    """ isWinner function """
     def sieve(n):
         """ Helper function to generate list of prime numbers up to
         n using Sieve of Eratosthenes """
