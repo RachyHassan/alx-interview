@@ -5,7 +5,10 @@
 
 
 def isWinner(x, nums):
-    """ isWinner function """
+    """ isWinner function
+        x- rounds
+        nums - numbers list
+    """
     def sieve(n):
         """ Helper function to generate list of prime numbers up to
         n using Sieve of Eratosthenes """
@@ -33,7 +36,8 @@ def isWinner(x, nums):
         Ben wins) """
 
         moves = 0
-        numbers = [True] * (n + 1)  """Initialize numbers from 1 to n as
+        numbers = [True] * (n + 1)
+        """Initialize numbers from 1 to n as
         True (available to pick) """
         for prime in primes:
             if prime > n:
