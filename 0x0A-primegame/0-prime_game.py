@@ -55,7 +55,9 @@ def isWinner(x, nums):
     ben_wins = 0
 
     for n in nums:
-        if count_moves(n):
+        if n == 1:
+            ben_wins += 1
+        elif count_moves(n):
             maria_wins += 1
         else:
             ben_wins += 1
